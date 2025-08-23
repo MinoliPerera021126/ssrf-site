@@ -12,6 +12,8 @@ import {
   ChevronRight,
   ClipboardCopy,
   Check,
+  Menu,
+  X
 } from "lucide-react";
 import {
   BarChart,
@@ -274,6 +276,7 @@ function ImpactChart() {
 
 export default function App() {
   const [active, setActive] = useState(SECTIONS[0].key);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
 	  document.documentElement.classList.add("dark");
@@ -293,10 +296,54 @@ export default function App() {
               <div className="text-xs opacity-70">Server-Side Request Forgery</div>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+		  
+		  {/* Desktop Tabs - hidden on small */}
+          <div className="hidden md:flex items-center gap-2">
             <TopicTabs active={active} setActive={setActive} />
           </div>
-        </div>
+		  
+		  {/* Mobile Hamburger Button - visible on small */}
+		  <button
+			  className="md:hidden inline-flex items-center justify-center p-2 rounded-md text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+			  aria-label="Open menu"
+			  onClick={() => setMobileMenuOpen((o) => !o)}
+			>
+			  {mobileMenuOpen ? (
+				<X className="h-6 w-6" />
+			  ) : (
+				<Menu className="h-6 w-6" />
+			  )}
+		  </button>
+		 </div>
+		  {mobileMenuOpen && (
+			  <motion.div
+				initial={{ height: 0, opacity: 0 }}
+				animate={{ height: "auto", opacity: 1 }}
+				exit={{ height: 0, opacity: 0 }}
+				transition={{ duration: 0.25 }}
+				className="md:hidden bg-zinc-900/95 backdrop-blur border-t border-white/20 mt-2 rounded-lg overflow-hidden"
+			  >
+				<div className="flex flex-col px-4 py-2">
+				  {SECTIONS.map((s) => (
+					<button
+					  key={s.key}
+					  onClick={() => {
+						setActive(s.key);
+						setMobileMenuOpen(false);
+					  }}
+					  className={`flex items-center gap-2 rounded-md px-3 py-2 my-1 transition ${
+						active === s.key
+						  ? "bg-indigo-600 text-white"
+						  : "text-white hover:bg-white/10"
+					  }`}
+					>
+					  {s.icon}
+					  <span>{s.title}</span>
+					</button>
+				  ))}
+				</div>
+			  </motion.div>
+			)}
       </div>
 
       {/* HERO */}
@@ -446,9 +493,9 @@ export default function App() {
             {/* Prevent */}
             {active === "prevent" && (
               <SectionCard title="How to Prevent" icon={<Lock className="h-5 w-5" />}>
-                <div className="grid md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <h4 className="font-semibold mb-2">Application Layer</h4>
+                    <h4 className="font-semibold mb-2"><b>Application Layer:</b></h4>
                     <ul className="space-y-2">
                       <li>Strict <strong>allowlists</strong> for hosts, ports, and schemes.</li>
                       <li>Reject private IP ranges; validate DNS/IP consistently.</li>
@@ -457,7 +504,7 @@ export default function App() {
                     </ul>
                   </div>
                   <div>
-                    <h4 className="font-semibold mb-2">Network & Cloud</h4>
+                    <h4 className="font-semibold mb-2"><b>Network & Cloud:</b></h4>
                     <ul className="space-y-2">
                       <li><strong>Deny-by-default</strong> egress; segment networks.</li>
                       <li>Enforce auth on internal services (Redis, ES, etc.).</li>
@@ -468,7 +515,17 @@ export default function App() {
                 </div>
                 <div className="rounded-2xl border border-white/20 p-4 mt-4">
                   <div className="text-sm font-semibold mb-1">Safe Fetch Pattern (concept)</div>
-                  <pre className="text-xs md:text-sm overflow-x-auto rounded-xl bg-zinc-950 text-zinc-100 p-4 border border-white/10"><code>{`// Pseudocode: allowlist & scheme checks\nconst allowedHosts = [\n  'cdn.example.com',\n  'api.example.com'\n];\nfunction safeFetch(inputUrl) {\n  const u = new URL(inputUrl);\n  if (!['https:', 'http:'].includes(u.protocol)) throw new Error('Scheme not allowed');\n  if (!allowedHosts.includes(u.hostname)) throw new Error('Host not allowed');\n  if (['127.0.0.1','localhost'].includes(u.hostname)) throw new Error('Loopback blocked');\n  // Optional: resolve DNS → verify against private ranges\n  return fetch(u.toString(), { redirect: 'error' });\n}`}</code></pre>
+                  <pre
+					  style={{
+						whiteSpace: "pre-wrap",
+						wordBreak: "break-all",
+						overflowX: "auto",
+						maxWidth: "100%",
+					  }}
+					  className="text-xs md:text-sm rounded-xl bg-zinc-950 text-zinc-100 p-4 border border-white/10"
+					>
+					  <code>{`// Pseudocode: \nallowlist & scheme checks const allowedHosts = ['cdn.example.com', 'api.example.com']; \nfunction safeFetch(inputUrl) { \n\tconst u = new URL(inputUrl);\n\tif (!['https:', 'http:'].includes(u.protocol)) throw new Error('Scheme not allowed');\n\tif (!allowedHosts.includes(u.hostname)) throw new Error('Host not allowed');\n\tif (['127.0.0.1','localhost'].includes(u.hostname)) throw new Error('Loopback blocked');\n\t// Optional: resolve DNS → verify against private ranges\n\treturn fetch(u.toString(), { redirect: 'error' });\n}`}</code>
+				</pre>
                 </div>
               </SectionCard>
             )}
@@ -491,7 +548,7 @@ export default function App() {
                   <button
                     key={s.key}
                     onClick={() => setActive(s.key)}
-                    className={`text-left rounded-xl px-3 py-2 transition ${
+                    className={`w-full text-left rounded-xl px-3 py-2 transition ${
                       active === s.key
                         ? "bg-indigo-600 text-white"
                         : "hover:bg-black/5 dark:hover:bg-white/10"
@@ -551,7 +608,7 @@ export default function App() {
       {/* FOOTER */}
             {/* FOOTER */}
       <footer className="w-full border-t border-white/20 py-10">
-        <div className="w-full px-6 lg:px-12 flex flex-wrap items-center justify-between gap-4 text-sm text-white/80">
+        <div className="w-full px-6 lg:px-12 flex flex-col md:flex-row flex-wrap items-center md:justify-between gap-4 text-sm text-white/80 text-center md:text-left">
           
           {/* Left side - Created By */}
           <div className="flex items-center gap-2">
