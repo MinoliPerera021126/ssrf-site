@@ -91,12 +91,21 @@ function SectionCard({
 }
 
 function TopicTabs({ active, setActive }: { active: string; setActive: (k: string) => void }) {
+	const handleClick = (key: string) => {
+		setActive(key);
+		const content = document.getElementById("content");
+		if (content) {
+		  const y = content.getBoundingClientRect().top + window.pageYOffset - 80; // adjust 80 for your sticky header height
+		  window.scrollTo({ top: y, behavior: "smooth" });
+		}
+	  };
+	  
   return (
     <div className="w-full flex justify-center gap-4 overflow-x-auto">
       {SECTIONS.map((s) => (
         <button
           key={s.key}
-          onClick={() => setActive(s.key)}
+          onClick={() => handleClick(s.key)}
           className={`group inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-medium transition-all ${
             active === s.key
               ? "border-indigo-500 bg-indigo-500 text-white shadow"
